@@ -1,3 +1,4 @@
+#加载TwoSampleMR包
 library(TwoSampleMR)
 
 GST<-extract_instruments(outcomes = 'prot-a-1283',p1=1e-05,clump=TRUE,p2=1e-05,r2=0.001,kb=10000,access_token = NULL)
