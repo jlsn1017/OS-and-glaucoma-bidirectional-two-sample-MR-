@@ -1,0 +1,66 @@
+library(TwoSampleMR)
+
+GST<-extract_instruments(outcomes = 'prot-a-1283',p1=1e-05,clump=TRUE,p2=1e-05,r2=0.001,kb=10000,access_token = NULL)
+
+POAG1<-extract_outcome_data(snps = GST$SNP, outcomes = 'finn-b-H7_GLAUCPRIMOPEN',proxies = FALSE)
+
+dat1 <- harmonise_data(exposure_dat=GST,outcome_dat=POAG1,action= 3)
+
+#MR分析，其中IVW方法不会默认使用随机效应模型，而是随机选择随机效应模型和固定效应模型中的一种
+res1 <- mr(dat1)
+res1
+OR1 <-generate_odds_ratios(res1)
+OR1
+
+res1 <-mr(dat1, method_list = c("mr_egger_regression", "mr_weighted_median","mr_ivw_mre","mr_ivw_fe"))
+res1 <-mr(dat1, method_list = c("mr_egger_regression", "mr_weighted_median",
+                                    "mr_ivw_mre","mr_ivw_fe","mr_simple_mode","mr_weighted_mode","mr_two_sample_ml"))
+
+OR1 <-generate_odds_ratios(res1)
+
+#指定其中几种MR方法进行分析
+mr(dat1, method_list = c("mr_egger_regression", "mr_ivw","mr_weighted_median"))
+
+#使用随机效应模型
+RE1 <-mr(dat1,method_list=c('mr_ivw_mre'))
+RE1
+REOR1 <-generate_odds_ratios(RE1)
+REOR1 
+
+#固定效应模型
+FE1 <-mr(dat1,method_list=c('mr_ivw_fe'))
+FE1
+FEOR1 <-generate_odds_ratios(FE1)
+FEOR1
+
+#离群值
+library(MRPRESSO)
+mr_presso(BetaOutcome="beta.outcome",BetaExposure="beta.exposure",SdOutcome="se.outcome",SdExposure="se.exposure",
+          OUTLIERtest=TRUE,DISTORTIONtest=TRUE,data=dat1,NbDistribution=1000,SignifThreshold=0.05)
+
+#异质性与多效性
+het1 <- mr_heterogeneity(dat1) 
+het1
+pleio1 <- mr_pleiotropy_test(dat1)  
+pleio1
+
+#留一法敏感性分析图
+single1 <-mr_leaveoneout(dat1)
+mr_leaveoneout_plot(single1)        
+
+#散点图
+mr_scatter_plot(res1,dat1)          
+
+#森林图 --- 单个SNP分析（三种方法），默认Wald比值法
+res_single1 <- mr_singlesnp(dat1)   
+mr_forest_plot(res_single1)         
+
+#漏斗图
+mr_funnel_plot(res_single1)         
+
+#输出数据
+library(xlsx)
+write.xlsx(dat, "F:dat001.xls")
+
+#导入csv格式的数据
+dat <- read.csv("F:dat001.csv")
