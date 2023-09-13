@@ -2,11 +2,11 @@ library(TwoSampleMR)
 
 GST<-extract_instruments(outcomes = 'prot-a-1283',p1=1e-05,clump=TRUE,p2=1e-05,r2=0.001,kb=10000,access_token = NULL)
 
-POAG1<-extract_outcome_data(snps = GST$SNP, outcomes = 'finn-b-H7_GLAUCPRIMOPEN',proxies = FALSE)
+POAG<-extract_outcome_data(snps = GST$SNP, outcomes = 'finn-b-H7_GLAUCPRIMOPEN',proxies = FALSE)
 
 dat1 <- harmonise_data(exposure_dat=GST,outcome_dat=POAG1,action= 3)
 
-#MR分析，其中IVW方法不会默认使用随机效应模型，而是随机选择随机效应模型和固定效应模型中的一种
+#MR分析
 res1 <- mr(dat1)
 res1
 OR1 <-generate_odds_ratios(res1)
